@@ -10,7 +10,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 # run v4l2-ctl --list-devices to determine index
-index_ir_cam = 2
+index_ir_cam = 4
 
 
 class Capture:
@@ -70,7 +70,7 @@ class Capture:
 
             try:
                 # Use for color or grayscale 8bit
-                i_msg = self.bridge.cv2_to_imgmsg(frame,'bgr8')
+                i_msg = self.bridge.cv2_to_imgmsg(frame,'8UC3')
 
                 # Use for raw 16 bit format
                 # i_msg = self.bridge.cv2_to_imgmsg(frame, 'mono16')

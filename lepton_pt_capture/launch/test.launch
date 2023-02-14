@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="test" type="test" name="test" output="screen">
+        <param name="test_param" value="test_value" />
+    </node>
