@@ -26,8 +26,8 @@ class ImagePublish:
         # #publish the image to the topic ir_image_save with key press
         # q = int(input("Press 0 to save image: "))
         # if q == 0:
-        self.image_pub = rospy.Publisher("ir_image_save", Image, queue_size=10)
-        print("Image published")
+        # self.image_pub = rospy.Publisher("ir_image_save", Image, queue_size=10)  #### not sure if this line is needed
+        # print("Image published")
         # else:
         #     print("Image not published")
 

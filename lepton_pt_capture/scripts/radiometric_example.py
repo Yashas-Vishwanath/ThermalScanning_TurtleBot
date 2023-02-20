@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
 import cv2
 import numpy as np
 import rospy
@@ -153,16 +157,17 @@ class Capture:
             ir_frame = frame.astype(np.uint8)
 
             # To RGB repeated values for LUT
-            ir_frame = cv2.cvtColor(ir_frame, cv2.COLOR_GRAY2BGR)
+            ir_frame = self.lepton.get_irradiance_frame()
+            rgb_frame = cv2.cvtColor(ir_frame, cv2.COLOR_YUV2RGB_YUYV)
 
             # Colorize
-            irFrame_col_map = cv2.LUT(ir_frame, self.color_map)
-            im_color = cv2.applyColorMap(ir_frame, cv2.COLORMAP_HSV)
+            irFrame_col_map = cv2.LUT(rgb_frame, self.color_map)
+            im_color = cv2.applyColorMap(rgb_frame, cv2.COLORMAP_HSV)
 
             print(f"Min temp (c): {min_t_c} \t max temp (x): {max_t_c}")
 
             if self.debug_video:
-                cv2.imshow("preview", cv2.resize(ir_frame, dsize=(640, 480), interpolation=cv2.INTER_LINEAR))
+                cv2.imshow("preview", cv2.resize(rgb_frame, dsize=(640, 480), interpolation=cv2.INTER_LINEAR))
                 key = cv2.waitKey(1)
                 if key == 27: # exit on ESC
                     break

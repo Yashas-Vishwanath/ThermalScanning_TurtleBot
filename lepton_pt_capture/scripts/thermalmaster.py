@@ -7,6 +7,7 @@
 # 2. The class ImageSave from storeimage.py has the node to save the image
 # 3. To exit the program, click on the red cross on the top right corner of the button window
 
+## Could not figure out how to stop the node from running after the button is clicked :/
 
 
 import rospy
@@ -56,5 +57,3 @@ btn1.pack()
 btn3.pack()
 
 root.mainloop()
-
-## Could not figure out how to stop the node from running after the button is clicked :/

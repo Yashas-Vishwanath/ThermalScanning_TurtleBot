@@ -163,6 +163,7 @@ catkin_install_python(PROGRAMS
   scripts/thermalmaster.py
   scripts/storeimage.py
   scripts/readimage.py
+  scripts/radiometric_example.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

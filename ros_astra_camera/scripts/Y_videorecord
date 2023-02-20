@@ -1,0 +1,185 @@
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+import numpy as np
+import time
+import datetime
+import rospy
+from sensor_msgs.msg import Image
+
+bridge = CvBridge()
+
+# rosnode to capture depth and rgb video simultaneously
+# and use the following code to save the video
+
+
+class VideoCapture:
+    def __init__(self):
+        self.depth = None
+        self.rgb = None
+        self.depth_sub = rospy.Subscriber("/camera/depth/image_raw", Image, self.depth_callback)
+        self.rgb_sub = rospy.Subscriber("/camera/color/image_raw", Image, self.rgb_callback)
+
+    def depth_callback(self, data):
+        try:
+            self.depth = bridge.imgmsg_to_cv2(data, "passthrough")
+        except CvBridgeError as e:
+            print(e)
+
+        vid = cv2.VideoCapture(4)
+        fps = vid.get(cv2.CAP_PROP_FPS)
+        width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        size = (width, height)
+
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        out = cv2.VideoWriter('/home/yashas/Term2/Studio/DepthVideo/Depth%s.avi'%time_stamp, fourcc, fps, size)
+        isRecording = False
+
+        while True:
+            ret, frame = vid.read()
+            if ret == True:
+                cv2.imshow('rgb', frame)
+                if isRecording == True:
+                    out.write(frame)
+                k = cv2.waitKey(10)
+                if k == ord('w') and isRecording == False:
+                    isRecording = True
+                    print('Recording........')
+                elif k == ord('e') and isRecording == True:
+                    out.release()
+                    isRecording = False
+                    print('Stopped recording')
+                elif k == ord('q'):
+                    if isRecording == True:
+                        out.release()
+                    isRecording = False
+                    print('Video window closed')
+                    break
+            else:
+                print('Video capture failed')
+                break
+
+    def rgb_callback(self, data):
+        try:
+            self.rgb = bridge.imgmsg_to_cv2(data, "bgr8")
+        except CvBridgeError as e:
+            print(e)
+
+        vid = cv2.VideoCapture(4)
+        fps = vid.get(cv2.CAP_PROP_FPS)
+        width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        size = (width, height)
+
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        out = cv2.VideoWriter('/home/yashas/Term2/Studio/RGBVideo/RGB%s.avi'%time_stamp, fourcc, fps, size)
+        isRecording = False
+
+        while True:
+            ret, frame = vid.read()
+            if ret == True:
+                cv2.imshow('rgb', frame)
+                if isRecording == True:
+                    out.write(frame)
+                k = cv2.waitKey(10)
+                if k == ord('w') and isRecording == False:
+                    isRecording = True
+                    print('Recording........')
+                elif k == ord('e') and isRecording == True:
+                    out.release()
+                    isRecording = False
+                    print('Stopped recording')
+                elif k == ord('q'):
+                    if isRecording == True:
+                        out.release()
+                    isRecording = False
+                    print('Video window closed')
+                    break
+            else:
+                print('Video capture failed')
+                break
+
+    def get_depth(self):
+        return self.depth
+
+    def get_rgb(self):
+        return self.rgb
+
+def main():
+    rospy.init_node("video_capture", anonymous=True)
+    video = VideoCapture()
+    rate = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        depth = video.get_depth()
+        rgb = video.get_rgb()
+        if depth is not None and rgb is not None:
+            cv2.imshow("Depth", depth)
+            cv2.imshow("RGB", rgb)
+            cv2.waitKey(1)
+        rate.sleep()
+
+if __name__ == '__main__':
+    main()
+
+
+
+# index_ir = 4
+
+# vid = cv2.VideoCapture(4)
+
+# #get the frame rate of the connected camera
+# fps = vid.get(cv2.CAP_PROP_FPS)
+
+# # get the frame size
+# width = int(vid.get(3))
+# height = int(vid.get(4))
+# size = (width, height)
+
+# fourcc = cv2.VideoWriter_fourcc(*'XVID')
+# fourcc2 = cv2.VideoWriter_fourcc(*'XVID')
+
+# #get time stamp
+# time_stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+# out1 = cv2.VideoWriter('/home/yashas/Term2/Studio/RGBVideo/Colour%s.avi'%time_stamp, fourcc, fps, size)
+# out2 = cv2.VideoWriter('/home/yashas/Term2/Studio/DepthVideo/Depth%s.avi'%time_stamp, fourcc2, fps, size)
+
+# isRecording = False
+
+# while(True):
+#     ret, frame = vid.read()
+#     if ret == True:
+#         cv2.imshow('1', frame)
+#         cv2.imshow('2', depth)
+        
+#         #write the video
+#         if isRecording == True:
+#             out1.write(frame)
+#             out2.write(depth)
+        
+#         k = cv2.waitKey(10)
+#         if k == ord('w') and isRecording == False:
+#             isRecording = True
+#             print('Video Capture Started')
+#         elif k == ord('e') and isRecording == True:
+#             out1.release()
+#             out2.release()
+#             isRecording = False
+#             print('Video Capture Stoped')
+#         elif k == ord('q'):
+#             if isRecording == True:
+#                 out1.release()
+#                 out2.release()
+#             isRecording = False
+#             print('Video Window Closed')
+#             break
+#     else:
+#         print('Video Capture Failed')
+#         break
+
+# # When everything done, release the capture
+# vid.release()
+# # out1.release()
+# # out2.release()
+# cv2.destroyAllWindows()
