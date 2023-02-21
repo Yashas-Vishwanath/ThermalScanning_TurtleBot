@@ -7,6 +7,7 @@ import numpy as np
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+# from lepton import Lepton
 
 def generate_colour_map():
     """
@@ -93,6 +94,8 @@ class Capture:
         # Generate color map - used for colorizing the video frame.
         rospy.init_node('lepton_pt_capture', anonymous=True)
         rospy.on_shutdown(self.shutdown_hook)
+        # self.video_device = video_device
+        # self.lepton = Lepton(1, self.video_device)
 
         self.color_map = generate_colour_map()
 
@@ -109,6 +112,9 @@ class Capture:
         self.bridge = CvBridge()
 
         self.debug_video = True
+    
+    # def LUT(frame, colormap):
+    #     return cv2.LUT(frame, colormap)
 
     def shutdown_hook(self):
         self.video.release()
@@ -157,17 +163,22 @@ class Capture:
             ir_frame = frame.astype(np.uint8)
 
             # To RGB repeated values for LUT
-            ir_frame = self.lepton.get_irradiance_frame()
-            rgb_frame = cv2.cvtColor(ir_frame, cv2.COLOR_YUV2RGB_YUYV)
+            print(self.color_map.shape)
+            print(self.color_map.dtype)
+
+            self.color_map = cv2.convertScaleAbs(self.color_map, alpha=(255.0/65535.0))
+            ir_frame = cv2.applyColorMap(ir_frame, self.color_map)
+            # covert ir_frame to a one channel image
+            ir_frame = cv2.cvtColor(ir_frame, cv2.COLOR_BGR2GRAY)
 
             # Colorize
-            irFrame_col_map = cv2.LUT(rgb_frame, self.color_map)
-            im_color = cv2.applyColorMap(rgb_frame, cv2.COLORMAP_HSV)
+            # irFrame_col_map = cv2.LUT(ir_frame, self.color_map)
+            # im_color = cv2.applyColorMap(ir_frame, cv2.COLORMAP_HSV)
 
             print(f"Min temp (c): {min_t_c} \t max temp (x): {max_t_c}")
 
             if self.debug_video:
-                cv2.imshow("preview", cv2.resize(rgb_frame, dsize=(640, 480), interpolation=cv2.INTER_LINEAR))
+                cv2.imshow("preview", cv2.resize(ir_frame, dsize=(640, 480), interpolation=cv2.INTER_LINEAR))
                 key = cv2.waitKey(1)
                 if key == 27: # exit on ESC
                     break

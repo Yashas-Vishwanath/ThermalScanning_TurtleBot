@@ -12,7 +12,7 @@ pattern_size = (9, 6)
 
 ###### get image frame size of image to be undistorted ######
 # Load an image
-img_forSize = cv2.imread("/home/yashas/Term2/Studio/rgb20230219-213605.jpg")
+img_forSize = cv2.imread("/home/yashas/Term2/Studio/RGBCaptures/UseForCalibration/rgb20230220-113659.jpg")
 
 # Get the frame size
 height, width, channels = img_forSize.shape
@@ -35,9 +35,10 @@ objpoints = []
 imgpoints = []
 
 # Load calibration images and convert them to grayscale
-calibration_images = glob.glob('/home/yashas/Term2/Studio/RGBCaptures/*.jpg')
+calibration_images = glob.glob('/home/yashas/Term2/Studio/RGBCaptures/UseForCalibration/*.jpg')
 # gray_images = []
 # if len(calibration_images) > 0:
+# tag = 0
 for img_file in calibration_images:
         # Load the image
         img = cv2.imread(img_file)
@@ -64,6 +65,9 @@ for img_file in calibration_images:
             cv2.drawChessboardCorners(img, pattern_size, corners2, ret)
             cv2.imshow('img', img)
             cv2.waitKey(1000)
+            # tag += 1
+            # cv2.imwrite('/home/yashas/Term2/Studio/RGBCaptures/UseForCalibration/gif_of_calibration/%s.jpg'%str(tag), img)
+
 
 cv2.destroyAllWindows()
 
@@ -153,34 +157,40 @@ print("\nTranslation Vectors: \n", tvecs)
 
 ####### code to undistort images from youtube ########
 
-img = cv2.imread("/home/yashas/Term2/Studio/rgb20230219-213605.jpg")
-h,  w = img.shape[:2]
-newcameramtx, roi = cv2.getOptimalNewCameraMatrix(K,D,(w,h),1,(w,h))
+img_list = glob.glob("/home/yashas/Term2/Studio/DepthCaptures/*.jpg")
+label = 0
+for image in img_list:
+    img = cv2.imread(image)
+    h,  w = img.shape[:2]
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(K,D,(w,h),1,(w,h))
 
-# undistort
-dst = cv2.undistort(img, K, D, None, newcameramtx)
-# crop the image
-x,y,w,h = roi
-dst = dst[y:y+h, x:x+w]
-now = time.strftime("%Y%m%d-%H%M%S")
-cv2.imwrite('/home/yashas/Term2/Studio/RGBUndistorted/undistorted_' + now + '.jpg',dst)
+    # undistort
+    dst = cv2.undistort(img, K, D, None, newcameramtx)
+    # crop the image
+    x,y,w,h = roi
+    dst = dst[y:y+h, x:x+w]
+    # now = time.strftime("%Y%m%d-%H%M%S")
+    # cv2.imwrite('/home/yashas/Term2/Studio/RGBUndistorted/undistorted_' + now + '.jpg',dst)
 
-# undistort with remapping
-mapx,mapy = cv2.initUndistortRectifyMap(K,D,None,newcameramtx,(w,h),5)
-dst = cv2.remap(img,mapx,mapy,cv2.INTER_LINEAR)
-# crop the image
-x,y,w,h = roi
-dst = dst[y:y+h, x:x+w]
-now = time.strftime("%Y%m%d-%H%M%S")
-cv2.imwrite('/home/yashas/Term2/Studio/RGBUndistorted/undistorted_' + now + '.jpg',dst)
+# # undistort with remapping
+# mapx,mapy = cv2.initUndistortRectifyMap(K,D,None,newcameramtx,(w,h),5)
+# dst = cv2.remap(img,mapx,mapy,cv2.INTER_LINEAR)
+# # crop the image
+# x,y,w,h = roi
+# dst = dst[y:y+h, x:x+w]
+# now = time.strftime("%Y%m%d-%H%M%S")
+# cv2.imwrite('/home/yashas/Term2/Studio/RGBUndistorted/undistorted_' + now + '.jpg',dst)
 
-# reprojection error
-mean_error = 0
+    # reprojection error
+    mean_error = 0
 
-for i in range(len(objpoints)):
-    imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], K, D)
-    error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
-    mean_error += error
+    for i in range(len(objpoints)):
+        imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], K, D)
+        error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
+        mean_error += error
 
-print( "\ntotal error: {}".format(mean_error/len(objpoints)) )
-print("\n\n\n")
+    print( "\ntotal error: {}".format(mean_error/len(objpoints)) )
+    print("\n\n\n")
+    label += 1
+    cv2.imwrite('/home/yashas/Term2/Studio/DepthUndistorted/undistorted_' + str(label) + '.jpg',dst)
+
